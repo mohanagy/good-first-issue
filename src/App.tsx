@@ -22,6 +22,7 @@ interface Issue {
     avatar_url: string;
   };
   repository_url: string;
+  languages: string[];
 }
 const languages = [
   "Typescript",
@@ -82,7 +83,18 @@ function App() {
           Authorization: `token ${import.meta.env.VITE_GITHUB_API_KEY}`,
         },
       });
-      setIssues(response.data.items);
+      const _issues = await Promise.all(
+        response.data.items.map(async (issue: any) => {
+          const repoName = getRepoName(issue.repository_url);
+
+          const usedLanguages = await getRepoLanguages(repoName);
+          return {
+            ...issue,
+            languages: usedLanguages,
+          };
+        })
+      );
+      setIssues(_issues);
       setTotalPages(Math.ceil(response.data.total_count / 30));
       setLoading(false);
     };
@@ -128,6 +140,9 @@ function App() {
         <td className="px-4 py-4 text-sm font-medium whitespace-nowrap animate-pulse">
           <div className="h-5 w-1/2 bg-gray-200 mt-3 mb-6 rounded"></div>
         </td>
+        <td className="px-4 py-4 text-sm font-medium whitespace-nowrap animate-pulse">
+          <div className="h-5 w-1/2 bg-gray-200 mt-3 mb-6 rounded"></div>
+        </td>
         <td className="px-12 py-4 text-sm font-medium whitespace-nowrap animate-pulse">
           <div className="h-5 w-1/2 bg-gray-200 mt-3 mb-6 rounded"></div>
         </td>
@@ -141,13 +156,20 @@ function App() {
     ));
   }
   const getRepoName = (url: string) => {
-    const regex = /https:\/\/(?:api\.)?github\.com\/(?:repos\/)?([\w-]+\/[\w-]+)/;
-    const match = url.match(regex);
-    let repoName = "N/A";
-    if (match) {
-      repoName = match[1]; // Returns the repository name
-    }
+    const repoName = url.split("/repos/")[1] || "No Repo Name";
+
     return repoName;
+  };
+
+  const getRepoLanguages = async (repo: string) => {
+    const api = `https://api.github.com/repos/${repo}/languages`;
+    const { data } = await axios.get(api, {
+      headers: {
+        Authorization: `token ${import.meta.env.VITE_GITHUB_API_KEY}`,
+      },
+    });
+    const languages = Object.keys(data);
+    return languages;
   };
 
   return (
@@ -240,6 +262,9 @@ function App() {
                     <th scope="col" className="py-3.5 px-4 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
                       Repo Name
                     </th>
+                    <th scope="col" className="py-3.5 px-4 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
+                      Repo Languages
+                    </th>
 
                     <th scope="col" className="px-12 py-3.5 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
                       Labels
@@ -267,6 +292,14 @@ function App() {
                             <div>
                               <a href={`https://github.com/${getRepoName(issue.repository_url)}`}>{getRepoName(issue.repository_url).split("/")[1]}</a>
                             </div>
+                          </td>
+                          <td className="px-12 py-4 text-sm font-medium whitespace-nowrap">
+                            {issue.languages.map((label) => (
+                              // add space between labels
+                              <div className="inline px-3 py-1 text-sm font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 dark:bg-gray-800 mx-1">
+                                {label}
+                              </div>
+                            ))}
                           </td>
 
                           <td className="px-12 py-4 text-sm font-medium whitespace-nowrap">

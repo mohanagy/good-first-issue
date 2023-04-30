@@ -15,3 +15,7 @@ npm run dev
 ```bash
 VITE_GITHUB_TOKEN=your_github_token
 ```
+
+## Website
+
+<https://gfi.naji.dev>
