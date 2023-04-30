@@ -21,6 +21,7 @@ interface Issue {
     login: string;
     avatar_url: string;
   };
+  repository_url: string;
 }
 const languages = [
   "Typescript",
@@ -124,6 +125,9 @@ function App() {
         <td className="px-4 py-4 text-sm font-medium whitespace-nowrap animate-pulse">
           <div className="h-5 w-1/2 bg-gray-200 mt-3 mb-6 rounded"></div>
         </td>
+        <td className="px-4 py-4 text-sm font-medium whitespace-nowrap animate-pulse">
+          <div className="h-5 w-1/2 bg-gray-200 mt-3 mb-6 rounded"></div>
+        </td>
         <td className="px-12 py-4 text-sm font-medium whitespace-nowrap animate-pulse">
           <div className="h-5 w-1/2 bg-gray-200 mt-3 mb-6 rounded"></div>
         </td>
@@ -136,6 +140,15 @@ function App() {
       </tr>
     ));
   }
+  const getRepoName = (url: string) => {
+    const regex = /https:\/\/(?:api\.)?github\.com\/(?:repos\/)?([\w-]+\/[\w-]+)/;
+    const match = url.match(regex);
+    let repoName = "N/A";
+    if (match) {
+      repoName = match[1]; // Returns the repository name
+    }
+    return repoName;
+  };
 
   return (
     <section className="mx-auto px-4">
@@ -224,6 +237,9 @@ function App() {
                     <th scope="col" className="py-3.5 px-4 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
                       Title
                     </th>
+                    <th scope="col" className="py-3.5 px-4 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
+                      Repo Name
+                    </th>
 
                     <th scope="col" className="px-12 py-3.5 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
                       Labels
@@ -245,6 +261,11 @@ function App() {
                           <td className="px-4 py-4 text-sm font-medium whitespace-nowrap">
                             <div>
                               <p className="text-sm font-normal text-gray-600 dark:text-gray-400">{issue.title}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-sm font-medium whitespace-nowrap">
+                            <div>
+                              <a href={`https://github.com/${getRepoName(issue.repository_url)}`}>{getRepoName(issue.repository_url).split("/")[1]}</a>
                             </div>
                           </td>
 
